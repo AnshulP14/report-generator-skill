@@ -12,13 +12,33 @@ A Codex and Pi skill for planning and incrementally writing long, cited, print-r
 
 ## Install
 
+Requirements:
+
+- Git
+- Node.js 20 or later with npm
+- An internet connection during the first setup
+
 ```bash
 git clone https://github.com/AnshulP14/report-generator-skill.git
-ln -s "$PWD/report-generator-skill/report-generator" ~/.agents/skills/report-generator
+cd report-generator-skill
+mkdir -p ~/.agents/skills
+ln -s "$PWD/report-generator" ~/.agents/skills/report-generator
 node ~/.agents/skills/report-generator/scripts/report.mjs setup
 ```
 
-The shared runtime is installed once under `~/.cache/report-generator`.
+`setup` installs the pinned OpenUI Lang renderer (`@openuidev/react-lang`), React, Markdown/YAML tooling, Vivliostyle CLI, and its rendering browser. No separate OpenUI installation is needed.
+
+The shared runtime is installed once under `~/.cache/report-generator` and uses approximately 300 MB. Setup finishes by building a smoke-test PDF.
+
+## Update
+
+Because the installed skill is a symlink, pull the repository and refresh only the shared runtime:
+
+```bash
+cd /path/to/report-generator-skill
+git pull --ff-only
+node report-generator/scripts/report.mjs setup
+```
 
 ## Use
 
