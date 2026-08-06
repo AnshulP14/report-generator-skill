@@ -1,0 +1,4 @@
+interface:
+  display_name: "Report Generator"
+  short_description: "Build readable, cited research reports"
+  default_prompt: "Use $report-generator to plan and produce a polished, cited PDF report."

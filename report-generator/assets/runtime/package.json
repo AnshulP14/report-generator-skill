@@ -1,0 +1,16 @@
+{
+  "name": "report-generator-runtime",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@openuidev/react-lang": "0.2.11",
+    "@vivliostyle/cli": "11.1.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "react-markdown": "10.1.0",
+    "remark-gfm": "4.0.1",
+    "yaml": "2.9.0",
+    "zod": "4.4.3"
+  }
+}
