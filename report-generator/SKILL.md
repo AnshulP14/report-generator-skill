@@ -1,50 +1,39 @@
 ---
 name: report-generator
-description: Plan and incrementally write long, cited, print-ready PDF reports from large document sets, web research, financial analysis, literature reviews, comparisons, or learning material. Use when work needs a readable multi-section report, durable Markdown sources, numeric citations, optional approved OpenUI visuals, or repeated editing without loading the whole report.
+description: "Plan and iteratively produce cited reports with a navigable standalone HTML reader and a print-safe PDF. Use when building a multi-section research report, synthesizing a large document set, creating cited financial analysis or literature reviews, or iteratively exploring a tough topic across sessions."
 ---
 
 # Report Generator
 
-Build a report as small addressable Markdown sections, then compile them through the bundled renderer. Treat `report.yml` as the sole plan and state file.
+Build a report as small addressable Markdown sections, then compile it with the bundled renderer. Treat `report.yml` as the sole plan and state file. Run autonomously: decide the plan, visuals, section order, and revisions from the request and available evidence.
 
-## Run the workflow
+## Workflow
 
-1. Find `report.yml` in the requested report directory.
-2. If it is absent, perform the planning pass only:
+1. If `report.yml` is absent, create it and the report structure:
    - Read `references/manifest.md`.
-   - Create `report.yml`, `sections/`, `layouts/`, `assets/`, `output/`, and an empty `citations.jsonl`.
-   - Define the thesis, audience, evidence strategy, total word budget, ordered section IDs, section purposes, and target words.
-   - Propose optional visual components by section. Keep `approved_visuals` empty.
-   - Set `plan_status: proposed` and stop for approval. Write no section prose or layouts.
-3. If the plan is proposed, incorporate the user's approval or requested changes. Record only explicitly approved visuals and set `plan_status: approved`.
-4. If the plan is approved, advance at most one section per invocation:
+   - Create `report.yml`, `sections/`, `assets/`, `output/`, and an empty `citations.jsonl`.
+   - Define the thesis, audience, evidence strategy, ordered section IDs and purposes.
+   - Choose static visuals that materially improve comprehension and record them in `approved_visuals`.
+   - Set `plan_status: approved`.
+2. Draft every section, iterating where evidence or artifact QA requires it:
    - Write or revise `sections/<id>.md` without repeating its report-level title.
-   - Read `references/citations.md` when the section contains sourced claims.
-   - Create `layouts/<id>.openui` only when that section has approved visuals; first read `references/visuals.md`.
-   - Set the section to `drafted`, run `build`, and stop for review.
-   - On approval, set it to `approved`; the same invocation may draft the next single section.
-5. When every section is approved, run `finalize`. Deliver the PDF and keep the Markdown, manifest, citations, layouts, and assets as editable sources.
+   - Read `references/citations.md` for sourced claims; append a CSL-compatible record to `citations.jsonl` as soon as a source is used.
+   - Set the section to `approved` after its source and build output pass review.
+3. Run `finalize` after every section is approved. Deliver both final artifacts and retain the editable Markdown, manifest, citations, and assets.
 
-An explicit user instruction to continue autonomously may waive the stop points. It does not waive citation checks, visual approval, one-section commits, or final validation.
+## Outputs
 
-## Keep the source lean
+`build` and `finalize` create:
 
-Use Markdown for narrative, tables, lists, equations, code, and ordinary callouts. Use OpenUI only for an approved composition that materially improves comprehension. Reference prose from layouts with `Narrative("section-id")`; keep prose out of `.openui` files.
+- `output/report.html` (or `interactive_output`): a standalone React/OpenUI reader. It includes a bundled script and runs without a server.
+- `output/report.pdf` (or `output`): a flat, print-safe PDF.
 
-Keep research inputs in the active context. Persist only report content and source metadata—no raw-document copies, extraction dumps, or research-note files.
+Use Markdown for prose, tables, lists, equations, and captions. Use `interactive_layout: layouts/reader.openui` in `report.yml` for the HTML interface; prefer `Tabs`, `Accordion`, `Card`, `Callout`, and charts to make reports explorable without writing HTML. Layouts use `Narrative("section-id")` to insert Markdown sections. The PDF intentionally ignores the OpenUI layout and renders the same Markdown as flat chapters. For an approved static chart, create an image asset and provide descriptive alt text.
 
-Use stable lowercase kebab-case section IDs. Read only `report.yml`, the current section, directly relevant source context, and referenced citation records during an edit. Search section IDs and citation IDs before broad file reads.
+Keep stable lowercase kebab-case section IDs. During edits, read only the manifest, target section, relevant source context, and cited records. Search IDs before broad reads.
 
-## Use the renderer
+## Renderer
 
-Resolve `scripts/report.mjs` relative to this `SKILL.md`; do not copy the runtime into a report.
+Resolve `scripts/report.mjs` relative to this `SKILL.md`; never copy the runtime into a report. Run `setup` after upgrading the skill or when the runtime is absent. `build` permits planned sections and renders placeholders. `finalize` requires an approved plan, approved sections, valid citations, and successful HTML/PDF QA.
 
-```bash
-node <skill-dir>/scripts/report.mjs setup
-node <skill-dir>/scripts/report.mjs build --root <report-dir>
-node <skill-dir>/scripts/report.mjs finalize --root <report-dir>
-```
-
-Run `setup` only when the shared runtime is absent or outdated. `build` permits planned sections and renders placeholders. `finalize` requires an approved plan, approved sections, valid citations, approved layouts, and a successful PDF build.
-
-After each build, inspect the PDF page render when layout changed materially. Check overflow, clipped visuals, sparse spill pages, broken links, table splits, and unreadably small text before presenting it.
+After each material build, open the HTML artifact and inspect the rendered PDF pages. Confirm all sections appear in both outputs. Check overflow, clipping, sparse spill pages, broken links, table splits, and unreadably small text. The renderer detects missing headings and nearly empty interior pages; repair every warning before finalizing.

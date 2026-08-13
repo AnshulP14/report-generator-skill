@@ -23,18 +23,27 @@ function run(program, args, cwd) {
 }
 
 async function setup() {
-  await fs.mkdir(runtimeDir, { recursive: true });
-  await fs.cp(sourceRuntime, runtimeDir, { recursive: true, force: true });
-  await run(process.platform === "win32" ? "npm.cmd" : "npm", ["ci", "--omit=dev", "--no-audit", "--no-fund"], runtimeDir);
-
+  await fs.mkdir(cacheRoot, { recursive: true });
+  const stagingDir = await fs.mkdtemp(path.join(cacheRoot, "runtime-staging-"));
+  const backupDir = path.join(cacheRoot, "runtime-previous");
   const smokeDir = await fs.mkdtemp(path.join(os.tmpdir(), "report-generator-"));
-  const smokeHtml = path.join(smokeDir, "smoke.html");
-  const smokePdf = path.join(smokeDir, "smoke.pdf");
-  await fs.writeFile(smokeHtml, "<!doctype html><style>@page{size:A4}</style><h1>Report runtime ready</h1>");
-  const vivliostyle = path.join(runtimeDir, "node_modules", ".bin", process.platform === "win32" ? "vivliostyle.cmd" : "vivliostyle");
-  await run(vivliostyle, ["build", smokeHtml, "-o", smokePdf, "-s", "A4"], runtimeDir);
-  await fs.rm(smokeDir, { recursive: true, force: true });
-  console.log(`Report runtime installed at ${runtimeDir}`);
+  try {
+    await fs.cp(sourceRuntime, stagingDir, { recursive: true, force: true });
+    await run(process.platform === "win32" ? "npm.cmd" : "npm", ["ci", "--omit=dev", "--no-audit", "--no-fund"], stagingDir);
+    const smokeHtml = path.join(smokeDir, "smoke.html");
+    const smokePdf = path.join(smokeDir, "smoke.pdf");
+    await fs.writeFile(smokeHtml, "<!doctype html><style>@page{size:A4}</style><h1>Report runtime ready</h1>");
+    const vivliostyle = path.join(stagingDir, "node_modules", ".bin", process.platform === "win32" ? "vivliostyle.cmd" : "vivliostyle");
+    await run(vivliostyle, ["build", smokeHtml, "-o", smokePdf, "-s", "A4"], stagingDir);
+    await fs.rm(backupDir, { recursive: true, force: true });
+    try { await fs.rename(runtimeDir, backupDir); } catch (error) { if (error.code !== "ENOENT") throw error; }
+    await fs.rename(stagingDir, runtimeDir);
+    await fs.rm(backupDir, { recursive: true, force: true });
+    console.log(`Report runtime installed at ${runtimeDir}`);
+  } finally {
+    await fs.rm(smokeDir, { recursive: true, force: true });
+    await fs.rm(stagingDir, { recursive: true, force: true });
+  }
 }
 
 if (command === "setup") {

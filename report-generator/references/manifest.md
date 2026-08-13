@@ -12,14 +12,13 @@ audience: Decision-makers evaluating the approaches
 thesis: The specific question or claim the report will resolve
 evidence_strategy: Prefer primary sources; distinguish facts, estimates, and inference
 word_budget: 5000
-plan_status: proposed
+plan_status: approved
 output: output/report.pdf
+interactive_output: output/report.html
+interactive_layout: layouts/reader.openui
 
 approved_visuals: []
-# After explicit approval:
-# approved_visuals:
-#   - section: approach-comparison
-#     components: [DecisionBanner, ComparisonMatrix]
+# Record chosen static images or charts here.
 
 sections:
   - id: executive-summary
@@ -35,8 +34,6 @@ sections:
     target_words: 1200
     status: planned
     file: sections/approach-comparison.md
-    # Add only after visual approval:
-    # layout: layouts/approach-comparison.openui
 ```
 
-Allowed section states are `planned`, `drafted`, and `approved`. Keep section order stable unless the user approves a structural revision. Section files must remain addressable independently and should not rely on prose in neighboring files.
+Allowed section states are `planned`, `drafted`, and `approved`. Keep section order stable unless new evidence requires a structural revision. Section files must remain addressable independently and should not rely on prose in neighboring files.
